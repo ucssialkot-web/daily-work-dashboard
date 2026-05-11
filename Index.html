@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Work Covered Sheet</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{--navy:#0b2c67;--gold:#d4a017;--border:#d9e1ee;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef3fa;color:#1b2b4a}
+.container{max-width:1500px;margin:20px auto;padding:20px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+button{background:var(--navy);color:#fff;border:none;padding:12px 18px;border-radius:8px;cursor:pointer;font-weight:700}
+button.secondary{background:var(--gold);color:#222}
+button.save{background:#198754}
+.sheet{background:#fff;border:4px solid var(--navy);border-radius:18px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.header{display:grid;grid-template-columns:110px 1fr 220px;gap:15px;padding:24px}
+.logo{width:90px;height:90px;border-radius:16px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:42px;margin:auto}
+.school h1{margin:0;text-align:center;color:var(--navy);font-size:48px}
+.school h2{margin:6px 0 0;text-align:center;color:#233a73;font-size:26px}
+.school p{margin:8px 0 0;text-align:center;color:var(--gold);font-style:italic}
+.datebox{background:var(--navy);color:#fff;border-radius:16px;padding:14px}
+.datebox label,.info label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
+input,select,textarea{width:100%;padding:8px;border:1px solid #cfd8e6;border-radius:6px;font-size:15px;font-family:inherit}
+.info{display:grid;grid-template-columns:2fr 2fr;border-top:2px solid var(--border);border-bottom:2px solid var(--border)}
+.cell{padding:14px 18px;border-right:1px solid var(--border)}
+.cell:last-child{border-right:none}
+.table-wrap{padding:24px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{background:var(--navy);color:#fff;padding:12px 8px;font-size:16px;border:2px solid #fff}
+th:first-child{background:var(--gold)}
+td{border:1px solid var(--border);padding:4px;vertical-align:top}
+td textarea{min-height:52px;resize:vertical}
+.footer{background:var(--navy);color:#fff;text-align:center;padding:14px;font-size:18px}
+.col-lesson{width:7%}.col-subject{width:14%}.col-cw{width:29%}.col-hw{width:29%}.col-teacher{width:21%}
+@media print {.toolbar{display:none}.container{margin:0;padding:0;max-width:none} body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="toolbar">
+    <button class="save" onclick="saveData()">Save Data</button>
+    <button onclick="loadData()">Load Data</button>
+    <button onclick="downloadImage()">Download as Image</button>
+    <button onclick="shareWhatsApp()">Share on WhatsApp</button>
+    <button class="secondary" onclick="printSelectedClass()">Print / Save PDF</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="header">
+      <div class="logo">🏫</div>
+      <div class="school">
+        <h1>UNITED CHARTER SCHOOL</h1>
+        <h2>CANTT CAMPUS SIALKOT</h2>
+        <p>Nurturing Minds, Building Futures</p>
+      </div>
+      <div class="datebox">
+        <label>Date</label>
+        <input type="date" id="workDate">
+        <label style="margin-top:8px;">Day</label>
+        <input type="text" id="dayName" placeholder="Monday">
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="cell">
+        <label>Class & Section</label>
+        <select id="classSection">
+          <option>Play Group</option>
+          <option>Nursery</option>
+          <option>KG</option>
+          <option>Grade 1</option>
+          <option>Grade 2</option>
+          <option>Grade 3</option>
+          <option>Grade 4</option>
+          <option>Grade 5</option>
+          <option>Grade 6</option>
+          <option>Grade 7</option>
+          <option>Grade 8</option>
+          <option>O Level</option>
+        </select>
+      </div>
+      <div class="cell">
+        <label>Academic Session</label>
+        <select id="session">
+          <option>2025 - 2026</option>
+          <option selected>2026 - 2027</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-lesson">Lesson No.</th>
+            <th class="col-subject">Subject</th>
+            <th class="col-cw">Class Work Covered (CW)</th>
+            <th class="col-hw">Homework Assigned (HW)</th>
+            <th class="col-teacher">Teacher Name</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">Together We Learn, Grow & Succeed</div>
+  </div>
+</div>
+
+<script>
+const tbody = document.getElementById('rows');
+for (let i = 1; i <= 9; i++) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input value="${i}"></td>
+    <td>
+<select>
+  <option value="">Select Subject</option>
+  <option>English</option>
+  <option>Mathematics</option>
+  <option>Science</option>
+  <option>Urdu</option>
+  <option>SST</option>
+  <option>History</option>
+  <option>Geography</option>
+  <option>Islamiyat</option>
+  <option>Computer</option>
+  <option>Games</option>
+  <option>Library</option>
+  <option>Art</option>
+  <option>GK</option>
+</select>
+</td>
+    <td><textarea placeholder="Write class work covered..."></textarea></td>
+    <td><textarea placeholder="Write homework assigned..."></textarea></td>
+    <td><input placeholder="Teacher Name"></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+document.getElementById('workDate').addEventListener('change', function() {
+  const d = new Date(this.value);
+  if (!isNaN(d)) {
+    document.getElementById('dayName').value =
+      d.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+});
+
+function sanitize(text) {
+  return (text || 'Class').replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '');
+}
+
+function getStorageKey() {
+  const className = document.getElementById('classSection').value || 'Class';
+  const date = document.getElementById('workDate').value || 'no_date';
+  return 'daily_work_' + sanitize(className) + '_' + sanitize(date);
+}
+
+function getData() {
+  const data = {
+    classSection: document.getElementById('classSection').value,
+    session: document.getElementById('session').value,
+    workDate: document.getElementById('workDate').value,
+    dayName: document.getElementById('dayName').value,
+    rows: []
+  };
+  document.querySelectorAll('#rows tr').forEach(tr => {
+    const fields = tr.querySelectorAll('input, select, textarea');
+    data.rows.push({
+      lesson: fields[0].value,
+      subject: fields[1].value,
+      cw: fields[2].value,
+      hw: fields[3].value,
+      teacher: fields[4].value
+    });
+  });
+  return data;
+}
+
+function setData(data) {
+  if (!data) return;
+  document.getElementById('classSection').value = data.classSection || 'Play Group';
+  document.getElementById('session').value = data.session || '2026 - 2027';
+  document.getElementById('workDate').value = data.workDate || '';
+  document.getElementById('dayName').value = data.dayName || '';
+  const trs = document.querySelectorAll('#rows tr');
+  trs.forEach((tr, i) => {
+    const fields = tr.querySelectorAll('input, select, textarea');
+    fields[0].value = i + 1;
+    fields[1].value = '';
+    fields[2].value = '';
+    fields[3].value = '';
+    fields[4].value = '';
+  });
+  (data.rows || []).forEach((row, i) => {
+    if (!trs[i]) return;
+    const fields = trs[i].querySelectorAll('input, select, textarea');
+    fields[0].value = row.lesson || (i + 1);
+    fields[1].value = row.subject || '';
+    fields[2].value = row.cw || '';
+    fields[3].value = row.hw || '';
+    fields[4].value = row.teacher || '';
+  });
+}
+
+function clearEntryFields() {
+  document.querySelectorAll('#rows tr').forEach((tr, index) => {
+    const fields = tr.querySelectorAll('input, select, textarea');
+    fields[0].value = index + 1;
+    fields[1].value = '';
+    fields[2].value = '';
+    fields[3].value = '';
+    fields[4].value = '';
+  });
+}
+
+function saveData() {
+  const current = getData();
+  const key = getStorageKey();
+
+  let existing = null;
+  const raw = localStorage.getItem(key);
+  if (raw) {
+    existing = JSON.parse(raw);
+  } else {
+    existing = {
+      classSection: current.classSection,
+      session: current.session,
+      workDate: current.workDate,
+      dayName: current.dayName,
+      rows: Array.from({length: 9}, (_, i) => ({
+        lesson: i + 1,
+        subject: '',
+        cw: '',
+        hw: '',
+        teacher: ''
+      }))
+    };
+  }
+
+  // Ensure exactly 9 rows exist
+  if (!existing.rows || existing.rows.length < 9) {
+    const rows = Array.from({length: 9}, (_, i) => ({
+      lesson: i + 1,
+      subject: '',
+      cw: '',
+      hw: '',
+      teacher: ''
+    }));
+    (existing.rows || []).forEach((row, i) => {
+      if (i < 9) rows[i] = row;
+    });
+    existing.rows = rows;
+  }
+
+  // Validate and save each filled row at the same lesson number
+  for (let i = 0; i < current.rows.length; i++) {
+    const row = current.rows[i];
+    const hasAnyData =
+      (row.subject && row.subject.trim()) ||
+      (row.cw && row.cw.trim()) ||
+      (row.hw && row.hw.trim()) ||
+      (row.teacher && row.teacher.trim());
+
+    if (!hasAnyData) continue;
+
+    if (!row.subject || !row.subject.trim()) {
+      alert('Subject is required in Lesson No. ' + (i + 1));
+      return;
+    }
+
+    if (!row.cw || !row.cw.trim()) {
+      alert('Class Work is required in Lesson No. ' + (i + 1));
+      return;
+    }
+
+    if (!row.teacher || !row.teacher.trim()) {
+      alert('Teacher Name is required in Lesson No. ' + (i + 1));
+      return;
+    }
+
+    existing.rows[i] = {
+      lesson: i + 1,
+      subject: row.subject,
+      cw: row.cw,
+      hw: row.hw,
+      teacher: row.teacher
+    };
+  }
+
+  localStorage.setItem(key, JSON.stringify(existing));
+  alert('Data saved successfully for ' + current.classSection + ' (' + current.workDate + ')');
+  clearEntryFields();
+}
+
+function loadData() {
+  const workDate = document.getElementById('workDate').value;
+  if (!workDate) {
+    clearEntryFields();
+    return;
+  }
+  const key = getStorageKey();
+  const raw = localStorage.getItem(key);
+  if (raw) {
+    setData(JSON.parse(raw));
+  } else {
+    clearEntryFields();
+  }
+}
+
+document.getElementById('classSection').addEventListener('change', loadData);
+document.getElementById('workDate').addEventListener('change', function() {
+  const d = new Date(this.value);
+  if (!isNaN(d)) {
+    document.getElementById('dayName').value =
+      d.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+  
+// Remove old corrupted Grade 1 data one time
+(function() {
+  const cleanupKey = 'grade1_cleanup_done_v1';
+  if (!localStorage.getItem(cleanupKey)) {
+    const keysToDelete = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.toLowerCase().includes('daily_work_grade_1')) {
+        keysToDelete.push(k);
+      }
+    }
+    keysToDelete.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(cleanupKey, 'true');
+  }
+})();
+
+
+
+async function shareWhatsApp() {
+  const proceed = chooseClassAndLoad();
+  if (!proceed) return;
+
+  setTimeout(async () => {
+    try {
+      const canvas = await html2canvas(document.getElementById('sheet'), { scale: 2 });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert('Unable to generate image.');
+          return;
+        }
+
+        const className = document.getElementById('classSection').value || 'Class';
+        const date = document.getElementById('workDate').value || new Date().toISOString().slice(0,10);
+        const file = new File([blob], className + '_' + date + '.png', { type: 'image/png' });
+
+        // Mobile and supported browsers
+        if (navigator.share && navigator.canShare) {
+          try {
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: 'Daily Work Covered',
+                text: 'Daily Work Covered Sheet',
+                files: [file]
+              });
+              return;
+            }
+          } catch (err) {
+            // continue to fallback
+          }
+        }
+
+        // Fallback for desktop browsers
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+
+        window.open('https://web.whatsapp.com/', '_blank');
+        alert('Image downloaded successfully. Please attach the downloaded image in WhatsApp.');
+      }, 'image/png');
+
+    } catch (error) {
+      alert('Unable to share on WhatsApp. Please try again.');
+    }
+  }, 300);
+}
+
+loadData();
+});
+
+function chooseClassAndLoad() {
+
+  const current = document.getElementById('classSection').value;
+  const selected = prompt('Enter class name to download (e.g., Grade 5):', current);
+  if (!selected) return false;
+  const select = document.getElementById('classSection');
+  for (let i = 0; i < select.options.length; i++) {
+    if (select.options[i].text.toLowerCase() === selected.toLowerCase()) {
+      select.selectedIndex = i;
+      break;
+    }
+  }
+  loadData();
+  return true;
+}
+
+function downloadImage() {
+  if (!chooseClassAndLoad()) return;
+  const className = document.getElementById('classSection').value;
+  const date = document.getElementById('workDate').value || new Date().toISOString().slice(0,10);
+  const filename = sanitize(className) + '_Daily_Work_Covered_' + date + '.png';
+
+  setTimeout(() => {
+    html2canvas(document.getElementById('sheet'), { scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }, 200);
+}
+
+function printSelectedClass() {
+  if (!chooseClassAndLoad()) return;
+  setTimeout(() => window.print(), 200);
+}
+
+loadData();
+</script>
+</body>
+</html>
